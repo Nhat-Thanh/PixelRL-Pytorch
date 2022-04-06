@@ -15,7 +15,7 @@ def sample(pi):
 
 def MyLogProb(pi, actions):
     b, n_actions, h, w = pi.shape
-    pi_tras = torch.reshape(pi, (-1, n_actions))
+    pi_trans = torch.reshape(pi, (-1, n_actions))
     log_prob_pi = F.log_softmax(pi_trans, dim=1)
     act_idx = torch.reshape(actions, (-1, 1))
     selected_pi = torch.take_along_dim(log_prob_pi, act_idx, 1)
