@@ -135,7 +135,7 @@ class PixelWiseA3C_InnerState_ConvR:
             # prev_image = prev_image.to(self.device)
             # cur_image = self.current_state.image.to(self.device)
             reward = torch.square(labels - prev_image) * 255 - torch.square(labels - self.current_state.image) * 255
-            self.past_reward[t] = reward
+            self.past_reward[t] = reward.to(self.device)
             self.past_log_pi[t] = MyLogProb(pi, actions)
             self.past_value[t] = v
             sum_reward = sum_reward + torch.mean(reward) * (self.gamma ** t)
@@ -144,7 +144,7 @@ class PixelWiseA3C_InnerState_ConvR:
         v_loss = 0.0
         total_loss = 0.0
         # R = 0 in author's source code
-        R = torch.zeros_like(v).to(self.device)
+        R = torch.zeros_like(v)
         for k in reversed(range(0, self.t_max)):
             R = R * self.gamma
             R = self.model.conv_smooth(R)
