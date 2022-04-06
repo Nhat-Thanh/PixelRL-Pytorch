@@ -20,7 +20,7 @@ class State:
     def step(self, actions, inner_state):
         # image = self.image.to('cpu').numpy()
         self.image = self.image.numpy()
-        act = actions.numpy()
+        act = actions.cpu().numpy()
         add_1       = self.image.copy()
         subtract_1  = self.image.copy()
         box         = np.zeros(shape=self.image.shape, dtype=self.image.dtype)
