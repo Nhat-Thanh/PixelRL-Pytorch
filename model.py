@@ -144,7 +144,7 @@ class PixelWiseA3C_InnerState_ConvR:
         v_loss = 0.0
         total_loss = 0.0
         # R = 0 in author's source code
-        R = torch.zeros_like(v)
+        R = torch.zeros_like(v).to(self.device)
         for k in reversed(range(0, self.t_max)):
             R = R * self.gamma
             R = self.model.conv_smooth(R)
