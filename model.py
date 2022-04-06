@@ -102,7 +102,7 @@ class PixelWiseA3C_InnerState_ConvR:
             # labels = labels.to(self.device)
             sum_reward = self.train_step(noise, labels)
             
-            print(f"{cur_episode} / {max_episode} - sum reward: {sum_reward.numpy():.6f}")
+            print(f"{cur_episode} / {max_episode} - sum reward: {sum_reward.numpy() * 255:.6f}")
             
             if cur_episode % save_every == 0:
                 reward, metric = self.evaluate(test_set, batch_size)
