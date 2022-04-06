@@ -7,7 +7,7 @@ import torch
 
 def sample(pi):
     b, n_actions, h, w = pi.shape
-    pi_prob = torch.softmax(pi, dim=1)
+    pi_prob = torch.softmax(pi)
     pi_trans = torch.reshape(pi_prob, (-1, n_actions))
     actions = torch.multinomial(pi_trans, 1)
     actions = torch.reshape(actions, (b, h, w))
