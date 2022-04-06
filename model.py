@@ -106,7 +106,7 @@ class PixelWiseA3C_InnerState_ConvR:
             
             if cur_episode % save_every == 0:
                 reward, metric = self.evaluate(test_set, batch_size)
-                print(f"Test - reward: {reward:..6f} - {self.metric.__name__}: {metric:.6f}")
+                print(f"Test - reward: {reward:.6f} - {self.metric.__name__}: {metric:.6f}")
 
                 torch.save(self.model.state_dict(), self.model_path)
                 torch.save({
