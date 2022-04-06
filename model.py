@@ -70,18 +70,18 @@ class PixelWiseA3C_InnerState_ConvR:
             current_state.reset(noise)
 
             for t in range(0, self.t_max):
-                prev_image = torch.as_tensor(current_state.image)
-                pi, _, inner_state = self.model.pi_and_v(current_state.tensor)
+                prev_image = torch.clone(current_state.image)
+                noise = torch.clone(current_state.tensor).to(self.device)
+                pi, _, inner_state = self.model.pi_and_v(noise)
                 pi = F.softmax(pi, 1)
-                actions = torch.argmax(pi, dim=1).to('cpu')
+                actions = torch.argmax(pi, dim=1)
                 current_state.step(actions, inner_state)
-                cur_image = torch.as_tensor(current_state.image)
                 reward = torch.square(labels - prev_image) * 255 - torch.square(labels - current_state.image) * 255
                 metric = self.metric(labels, current_state.image)
                 rewards.append(reward.numpy())
                 metrics.append(metric.numpy())
         
-        reward = np.mean(rewards)
+        reward = np.mean(rewards) * 255
         metric = np.mean(metrics)
             
         return reward, metric
@@ -91,7 +91,7 @@ class PixelWiseA3C_InnerState_ConvR:
         if self.ckpt_man is not None:
             cur_episode = self.ckpt_man['episode']
         max_episode = cur_episode + episodes
-        torch.autograd.set_detect_anomaly(True)
+        # torch.autograd.set_detect_anomaly(True)
         while cur_episode < max_episode:
             cur_episode += 1
             noise, labels, _ = train_set.get_batch(batch_size)
@@ -155,5 +155,6 @@ class PixelWiseA3C_InnerState_ConvR:
         
         total_loss.backward()
         self.optimizer.step()
+        self.model.train(False)
 
         return sum_reward
