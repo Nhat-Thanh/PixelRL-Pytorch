@@ -45,7 +45,8 @@ pixelRL = PixelWiseA3C_InnerState_ConvR(n_actions, device)
 lr = 1e-3
 gamma = 0.95
 t_max = 5
-pixelRL.setup(opt_lr= lr, metric=PSNR, gamma=gamma, t_max=t_max, model_path=model_path, ckpt_path=ckpt_path)
+beta = 1e-2
+pixelRL.setup(opt_lr= lr, metric=PSNR, gamma=gamma, t_max=t_max, beta=beta, model_path=model_path, ckpt_path=ckpt_path)
 
 pixelRL.load_checkpoint(ckpt_path)
 if not exists(ckpt_path):

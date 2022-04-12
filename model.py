@@ -164,7 +164,7 @@ class PixelWiseA3C_InnerState_ConvR:
             R = R + self.past_reward[k]
             Advantage = R - self.past_value[k]
             pi_loss = pi_loss - self.past_log_pi[k] * Advantage
-            pi_loss = pi_loss - 1e-2 * self.past_entropy[k]
+            pi_loss = pi_loss - self.beta * self.past_entropy[k]
             v_loss = v_loss + torch.square(Advantage)
 
         total_loss = torch.mean(pi_loss + v_loss)
