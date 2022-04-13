@@ -163,7 +163,7 @@ class PixelWiseA3C_InnerState_ConvR:
         self.shared_model.train(True)
 
         sum_reward = 0.0
-        reward = np.zeros_like(labels, dtype=torch.float32)
+        reward = np.zeros_like(labels, dtype=np.float32)
         t = 0
         while t < self.t_max:
             self.past_rewards[t - 1] = torch.as_tensor(reward).to(self.device)

@@ -11,7 +11,7 @@ class State:
     def reset(self, noise_img):
         self.image = noise_img
         b, _, h, w = self.image.shape
-        previous_state = np.zeros(size=(b, 64, h, w), dtype=self.image.dtype)
+        previous_state = np.zeros(shape=(b, 64, h, w), dtype=self.image.dtype)
         self.tensor = np.concatenate([self.image, previous_state], axis=1)
     
     def set(self, noise_img):
