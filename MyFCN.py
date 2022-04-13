@@ -1,6 +1,6 @@
 import torch
-import torch.nn.functional as F
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 class MyFCN(nn.Module):
@@ -14,18 +14,12 @@ class MyFCN(nn.Module):
         # pi network
         self.conv_5_pi = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=3, dilation=3)
         self.conv_6_pi = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=2, dilation=2)
-        self.W_xr = nn.Conv2d(in_channels=64, out_channels=64,
-                              kernel_size=3, padding=1, bias=False)
-        self.W_hr = nn.Conv2d(in_channels=64, out_channels=64,
-                              kernel_size=3, padding=1, bias=False)
-        self.W_xz = nn.Conv2d(in_channels=64, out_channels=64,
-                              kernel_size=3, padding=1, bias=False)
-        self.W_hz = nn.Conv2d(in_channels=64, out_channels=64,
-                              kernel_size=3, padding=1, bias=False)
-        self.W_xh = nn.Conv2d(in_channels=64, out_channels=64,
-                              kernel_size=3, padding=1, bias=False)
-        self.W_hh = nn.Conv2d(in_channels=64, out_channels=64,
-                              kernel_size=3, padding=1, bias=False)
+        self.W_xr = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1, bias=False)
+        self.W_hr = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1, bias=False)
+        self.W_xz = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1, bias=False)
+        self.W_hz = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1, bias=False)
+        self.W_xh = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1, bias=False)
+        self.W_hh = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1, bias=False)
         self.conv_7_pi = nn.Conv2d(in_channels=64, out_channels=n_actions, kernel_size=3, padding=1)
 
         # v network

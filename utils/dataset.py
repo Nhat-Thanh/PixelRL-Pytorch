@@ -1,23 +1,23 @@
-from utils.common import *
-import numpy as np
-import torch
-import os
 import cv2
+import numpy as np
+import os
+import torch
+from utils.common import *
 
 class dataset:
-    def __init__(self, dataset_dir, subset):
-        self.dataset_dir = dataset_dir
-        self.subset = subset
-        self.labels = torch.Tensor([])
-        self.labels_file = os.path.join(self.dataset_dir, f"labels_{self.subset}.npy")
+    def __init__(self, dataset_dir, subset, noise_setting):
         self.cur_idx = 0
+        self.labels = torch.Tensor([])
+        self.labels_file = os.path.join(dataset_dir, f"labels_{subset}.npy")
+        self.mean = noise_setting[0]
+        self.sigma = noise_setting[1]
+        self.subset_dir = os.path.join(dataset_dir, subset)
     
     def generate(self, h_crop_size, w_crop_size, transform=False):      
         if exists(self.labels_file):
             print(f"{self.labels_file} HAS ALREADY EXISTED\n")
             return
-        subset_dir = os.path.join(self.dataset_dir, self.subset)
-        ls_images = sorted_list(subset_dir)
+        ls_images = sorted_list(self.subset_dir)
         num_crop = 20
 
         labels = np.zeros(shape=(len(ls_images) * num_crop, 1, h_crop_size, w_crop_size), 
@@ -50,11 +50,12 @@ class dataset:
     def load_data(self, shuffle_arrays : bool):
         if not exists(self.labels_file):
             ValueError(f"\n{self.labels_file} DOES NOT EXIST\n")
+
         self.labels = np.load(self.labels_file)
 
         if shuffle_arrays:
             np.random.shuffle(self.labels)
-        # self.labels = torch.as_tensor(self.labels, dtype=torch.float32)
+
         self.labels = np.float32(self.labels)
     
     def get_batch(self, batch_size, shuffle_each_epoch=True):
@@ -69,7 +70,7 @@ class dataset:
                 self.labels = self.labels[indices]
         
         labels = self.labels[self.cur_idx : self.cur_idx + batch_size]
-        noise = np.random.normal(0.0, 15.0, labels.shape) / 255
+        noise = np.random.normal(self.mean, self.sigma, labels.shape) / 255
         data = np.clip(labels + noise, 0.0, 1.0)
         data = data.astype(np.float32)
         self.cur_idx += batch_size

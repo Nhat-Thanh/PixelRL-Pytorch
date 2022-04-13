@@ -1,6 +1,5 @@
-import numpy as np
-import torch
 import cv2
+import numpy as np
 
 class State:
     def __init__(self):

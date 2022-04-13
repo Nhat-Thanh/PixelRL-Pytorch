@@ -8,53 +8,72 @@ import os
 
 torch.manual_seed(1)
 
+# =====================================================================================
+# arguments parser
+# =====================================================================================
+
 parser = argparse.ArgumentParser()
-parser.add_argument("--sigma",        type=int,   default=15,   help='-')
-parser.add_argument("--episodes",        type=int,   default=5,   help='-')
-parser.add_argument("--batch-size",      type=int,   default=64,       help='-')
-parser.add_argument("--save-every",      type=int,   default=5,        help='-')
-parser.add_argument("--ckpt-dir",        type=str,   default="checkpoint/",      help='-')
-
+parser.add_argument("--sigma",        type=int,   default=15,              help='-')
+parser.add_argument("--episodes",     type=int,   default=5000,            help='-')
+parser.add_argument("--batch-size",   type=int,   default=64,              help='-')
+parser.add_argument("--save-every",   type=int,   default=500,             help='-')
+parser.add_argument("--ckpt-dir",     type=str,   default="checkpoint/",   help='-')
 FLAG, unparsed = parser.parse_known_args()
-sigma = FLAG.sigma
-episodes = FLAG.episodes
-batch_size = FLAG.batch_size
-ckpt_dir = FLAG.ckpt_dir
-save_every = FLAG.save_every
-model_path = os.path.join(ckpt_dir, "model.pt")
-pretrain_path = f"initial_weight/denoise_{sigma}_gray_ConvGRU_RMC.pt"
-model_path = os.path.join(ckpt_dir, f"denoise_{sigma}_ConvGRU_RMC.pt")
-ckpt_path = os.path.join(ckpt_dir, "ckpt.pt")
 
-crop_size = 70
-dataset_dir = "dataset/"
-train_set = dataset(dataset_dir, "train")
-train_set.generate(crop_size, crop_size)
-train_set.load_data(shuffle_arrays=True)
+# =====================================================================================
+# Global variables
+# =====================================================================================
 
-test_set = dataset(dataset_dir, "test")
-test_set.generate(crop_size, crop_size)
-test_set.load_data(shuffle_arrays=True)
+# Noise settings
+MEAN = 0.0
+SIGMA = FLAG.sigma
+
+# training settings
+BATCH_SIZE = FLAG.batch_size
+CKPT_DIR = FLAG.ckpt_dir
+CKPT_PATH = os.path.join(CKPT_DIR, "ckpt.pt")
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+EPISODES = FLAG.episodes
+MODEL_PATH = os.path.join(CKPT_DIR, "model.pt")
+PRETRAINED_PATH = f"initial_weight/denoise_{SIGMA}_gray_ConvGRU_RMC.pt"
+SAVE_EVERY = FLAG.save_every
+
+# model settings
+N_ACTIONS = 9
+LEARNING_RATE = 1e-3
+
+# A3C settings
+GAMMA = 0.95
+T_MAX = 5
+BETA = 1e-2
+
+# Dataset settings
+CROP_SIZE = 70
+DATASET_DIR = "dataset/"
 
 
-# -----------------------------------------------------------
-#  Train
-# -----------------------------------------------------------
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-n_actions = 9
+# =====================================================================================
+# Train
+# =====================================================================================
 
-lr = 1e-3
-gamma = 0.95
-t_max = 5
-beta = 1e-2
-model = MyFCN(n_actions).to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr)
-pixelRL = PixelWiseA3C_InnerState_ConvR(model, t_max, gamma, beta)
-pixelRL.setup(optimizer, lr, batch_size, PSNR,  device, model_path, ckpt_path)
+if __name__ == 'main':
 
-pixelRL.load_checkpoint(ckpt_path)
-if not exists(ckpt_path):
-    print(f"Load pre-trained model at {pretrain_path}")
-    pixelRL.load_weights(pretrain_path)
+    train_set = dataset(DATASET_DIR, "train", (MEAN, SIGMA))
+    train_set.generate(CROP_SIZE, CROP_SIZE)
+    train_set.load_data(shuffle_arrays=True)
 
-pixelRL.train(train_set, test_set, batch_size, episodes, save_every)
+    test_set = dataset(DATASET_DIR, "test", (MEAN, SIGMA))
+    test_set.generate(CROP_SIZE, CROP_SIZE)
+    test_set.load_data(shuffle_arrays=True)
+
+    MODEL = MyFCN(N_ACTIONS).to(DEVICE)
+    OPTIMIZER = torch.optim.Adam(MODEL.parameters(), LEARNING_RATE)
+    pixelRL = PixelWiseA3C_InnerState_ConvR(MODEL, T_MAX, GAMMA, BETA)
+    pixelRL.setup(OPTIMIZER, LEARNING_RATE, BATCH_SIZE, PSNR,  DEVICE, MODEL_PATH, CKPT_PATH)
+
+    pixelRL.load_checkpoint(CKPT_PATH)
+    if not exists(CKPT_PATH):
+        print(f"Load pre-trained model at {PRETRAINED_PATH}")
+        pixelRL.load_weights(PRETRAINED_PATH)
+
+    pixelRL.train(train_set, test_set, BATCH_SIZE, EPISODES, SAVE_EVERY)
