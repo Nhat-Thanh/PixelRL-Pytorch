@@ -48,7 +48,7 @@ class MyFCN(nn.Module):
         H_tilde_t = torch.tanh(self.W_xh(X_t) + self.W_hh(R_t * H_t1))
         H_t = Z_t * H_t1 + (1 - Z_t) * H_tilde_t
 
-        pi = torch.softmax(self.conv_7_pi(H_t), dim=1)
+        pi = self.conv_7_pi(H_t)
 
         # v network
         X_v = F.relu(self.conv_5_v(X))

@@ -72,7 +72,8 @@ def main():
             statevar = torch.as_tensor(CURRENT_STATE.tensor, dtype=torch.float32).to(DEVICE)
             pi, _, inner_state = MODEL.pi_and_v(statevar)
 
-            actions = torch.argmax(pi, dim=1).cpu()
+            actions_prob = torch.softmax(pi, dim=1).cpu()
+            actions = torch.argmax(actions_prob, dim=1)
             inner_state = inner_state.cpu()
 
             CURRENT_STATE.step(actions, inner_state)

@@ -7,15 +7,13 @@ from utils.common import exists
 
 torch.manual_seed(1)
 
-def MyEntropy(pi):
-    log_prob = torch.log(pi)
-    entropy = torch.stack([- torch.sum(log_prob * pi, dim=1)]).permute(([1, 0, 2, 3]))
-    return entropy
+def MyEntropy(log_actions_prob, actions_prob):
+    entropy = torch.stack([- torch.sum(log_actions_prob * actions_prob, dim=1)])
+    return entropy.permute(([1, 0, 2, 3]))
 
-def MyLogProb(pi, actions):
-    selected_pi = pi.gather(1, actions.unsqueeze(1))
-    log_prob = torch.log(selected_pi)
-    return log_prob 
+def MyLogProb(log_actions_prob, actions):
+    selected_pi = log_actions_prob.gather(1, actions.unsqueeze(1))
+    return selected_pi 
 
 
 class PixelWiseA3C_InnerState_ConvR:
@@ -97,8 +95,9 @@ class PixelWiseA3C_InnerState_ConvR:
                 prev_image = current_state.image.copy()
                 noise = torch.as_tensor(current_state.image.copy()).to(self.device)
                 pi, _ = self.model.pi_and_v(noise)
-                
-                actions = torch.argmax(pi, dim=1)
+
+                actions_prob = torch.softmax(pi, dim=1)
+                actions = torch.argmax(actions_prob, dim=1)
                 current_state.step(actions.cpu()) 
                 
                 reward = (np.square(labels - prev_image) - np.square(labels - current_state.image)) * 255
@@ -132,9 +131,11 @@ class PixelWiseA3C_InnerState_ConvR:
                 print(f"Test - reward: {reward * 255:.6f} - {self.metric.__name__}: {metric:.6f}")
 
                 # save model weights
+                print(f"Save model weights to {self.model_path}")
                 torch.save(self.model.state_dict(), self.model_path)
 
                 # save current training state
+                print(f"Save checkpoint to {self.ckpt_path}")
                 torch.save({
                     'episode': cur_episode,
                     'model': self.model.state_dict(),
@@ -155,15 +156,17 @@ class PixelWiseA3C_InnerState_ConvR:
             noise = torch.as_tensor(self.current_state.image).to(self.device)
             pi, v = self.model.pi_and_v(noise)
 
-            pi_trans = pi.permute([0, 2, 3, 1])
-            actions = Categorical(pi_trans).sample().detach()
+            actions_prob = torch.softmax(pi, dim=1)
+            log_actions_prob = torch.log_softmax(pi, dim=1)
+            prob_trans = actions_prob.permute([0, 2, 3, 1])
+            actions = Categorical(prob_trans).sample().detach()
 
             self.current_state.step(actions.cpu())
             reward = (np.square(labels - prev_image) - np.square(labels - self.current_state.image)) * 255
 
             self.past_rewards[t] = torch.as_tensor(reward).to(self.device)
-            self.past_log_prob[t] = MyLogProb(pi, actions)
-            self.past_entropy[t] = MyEntropy(pi)
+            self.past_log_prob[t] = MyLogProb(log_actions_prob, actions)
+            self.past_entropy[t] = MyEntropy(log_actions_prob, actions_prob)
             self.past_values[t] = v
             sum_reward += np.mean(reward) * np.power(self.gamma, t)
 

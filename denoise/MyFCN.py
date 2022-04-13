@@ -30,7 +30,7 @@ class MyFCN(nn.Module):
         # pi network
         X_pi = F.relu(self.conv_5_pi(X))
         X_pi = F.relu(self.conv_6_pi(X_pi))
-        pi = torch.softmax(self.conv_7_pi(X_pi), dim=1)
+        pi = self.conv_7_pi(X_pi)
 
         # v network
         X_v = F.relu(self.conv_5_v(X))
