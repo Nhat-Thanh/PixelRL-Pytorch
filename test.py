@@ -43,31 +43,31 @@ sum_reward = 0
 sum_psnr = 0
 for i in range(0, len(ls_images)):
     image_path = ls_images[i]
-    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-    img = norm01(img)[np.newaxis, ...]
-    img = np.expand_dims(img, 0) 
-    noise = np.random.normal(0.0, sigma, img.shape)
-    noise_img = np.clip(img + noise, 0.0, 1.0)
- 
-    rewards = []
-    metrics = []
-    current_state.reset(noise_img)
+    label_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    label_image = norm01(label_image)[np.newaxis, ...]
+    label_image = np.expand_dims(label_image, 0)
 
+    noise = np.random.normal(0.0, sigma, label_image.shape)
+    noise_image = np.clip(label_image + noise, 0.0, 1.0)
+    noise_image = np.float32(noise_image)
+    current_state.reset(noise_image)
+
+    rewards = []
     for t in range(0, t_max):
         prev_image = current_state.image.copy()
-        noise_img = torch.as_tensor(current_state.tensor, dtype=torch.float32).to(device)
-        pi, _, inner_state = model.pi_and_v(noise_img)
+        noise_image = torch.as_tensor(current_state.tensor, dtype=torch.float32).to(device)
+        pi, _, inner_state = model.pi_and_v(noise_image)
 
         actions = torch.argmax(pi, dim=1).cpu()
         inner_state = inner_state.cpu()
 
         current_state.step(actions, inner_state)
 
-        reward = (np.square(img - prev_image) - np.square(img - current_state.image)) * 255
+        reward = (np.square(label_image - prev_image) - np.square(label_image - current_state.image)) * 255
 
         rewards.append(reward)
     
-    psnr = PSNR(img, current_state.image)
+    psnr = PSNR(label_image, current_state.image)
     sum_reward += np.mean(rewards)
     sum_psnr += psnr
 
