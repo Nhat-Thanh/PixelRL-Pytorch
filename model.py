@@ -160,7 +160,7 @@ class PixelWiseA3C_InnerState_ConvR:
         self.shared_model.train(True)
 
         sum_reward = 0.0
-        reward = torch.zeros_like(labels, dtype=torch.float32)
+        reward = torch.zeros_like(labels, dtype=torch.float32).to(self.device)
         t = 0
         while t < self.t_max:
             self.past_rewards[t - 1] = reward
@@ -191,7 +191,7 @@ class PixelWiseA3C_InnerState_ConvR:
         R = torch.zeros_like(v).to(self.device)
         for k in reversed(range(0, self.t_max)):
             R *= self.gamma
-            R = self.model.conv_smooth(R).cpu()
+            R = self.model.conv_smooth(R)
             R += self.past_rewards[k]
             v = self.past_values[k]
             entropy = self.past_entropy[k]
