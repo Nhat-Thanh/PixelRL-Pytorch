@@ -35,7 +35,7 @@ current_state = State()
 model = MyFCN(n_actions).to(device)
 
 if exists(model_path):
-    model.load_state_dict(torch.load(model_path), map_location=torch.device(device))
+    model.load_state_dict(torch.load(model_path, map_location=torch.device(device)))
 
 model.eval()
 
