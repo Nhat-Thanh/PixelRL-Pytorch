@@ -19,7 +19,6 @@ def MyLogProb(pi, actions):
 
 
 class PixelWiseA3C_InnerState_ConvR:
-
     def __init__(self, model, t_max, gamma, beta=1e-2,
                  pi_loss_coef=1.0, v_loss_coef=0.5):
 
@@ -40,7 +39,9 @@ class PixelWiseA3C_InnerState_ConvR:
         self.past_rewards = {}
         self.past_values = {}
 
-    def setup(self, optimizer, init_lr, batch_size, metric, device, model_path, ckpt_path):
+    def setup(self, optimizer, init_lr, batch_size,
+              metric, device, model_path, ckpt_path):
+
         self.device = device
         self.metric = metric
         self.model_path = model_path
@@ -149,27 +150,22 @@ class PixelWiseA3C_InnerState_ConvR:
 
         sum_reward = 0.0
         reward = 0.0
-        t = 0
-        while t < self.t_max:
+        for t in range(0, self.t_max):
             prev_image = self.current_state.image.copy()
             noise = torch.as_tensor(self.current_state.tensor).to(self.device)
             pi, v, inner_state = self.model.pi_and_v(noise)
 
             pi_trans = pi.permute([0, 2, 3, 1])
             actions = Categorical(pi_trans).sample().detach()
-            inner_state = inner_state.cpu()
 
-            self.current_state.step(actions.cpu(), inner_state)
-
+            self.current_state.step(actions.cpu(), inner_state.cpu())
             reward = (np.square(labels - prev_image) - np.square(labels - self.current_state.image)) * 255
-            # self.past_rewards[t - 1] = torch.as_tensor(reward).to(self.device)
+
             self.past_rewards[t] = torch.as_tensor(reward).to(self.device)
             self.past_log_prob[t] = MyLogProb(pi, actions)
             self.past_entropy[t] = MyEntropy(pi)
             self.past_values[t] = v
             sum_reward += np.mean(reward) * np.power(self.gamma, t)
-            t += 1
-        # self.past_rewards[t - 1] = torch.as_tensor(reward).to(self.device)
 
         pi_loss = 0.0
         v_loss = 0.0
