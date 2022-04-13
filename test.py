@@ -40,7 +40,6 @@ if exists(model_path):
 
 model.train(False)
 
-sum_reward = 0
 total_reward = 0
 sum_psnr = 0
 for i in range(0, len(ls_images)):
@@ -54,7 +53,6 @@ for i in range(0, len(ls_images)):
     noise_image = np.float32(noise_image)
     current_state.reset(noise_image)
 
-    reward = 0
     sum_reward = 0
     for t in range(0, t_max):
         prev_image = current_state.image.copy()
@@ -71,7 +69,7 @@ for i in range(0, len(ls_images)):
     
     current_image = np.clip(current_state.image, 0.0, 1.0)
     psnr = PSNR(label_image, current_image)
-    total_reward += sum_reward
+    total_reward += sum_reward * 255
     sum_psnr += psnr
 
     if save_images:
