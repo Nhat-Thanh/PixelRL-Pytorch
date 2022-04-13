@@ -56,8 +56,7 @@ DATASET_DIR = "dataset/"
 # Train
 # =====================================================================================
 
-if __name__ == 'main':
-
+def main():
     train_set = dataset(DATASET_DIR, "train", (MEAN, SIGMA))
     train_set.generate(CROP_SIZE, CROP_SIZE)
     train_set.load_data(shuffle_arrays=True)
@@ -77,3 +76,7 @@ if __name__ == 'main':
         pixelRL.load_weights(PRETRAINED_PATH)
 
     pixelRL.train(train_set, test_set, BATCH_SIZE, EPISODES, SAVE_EVERY)
+
+
+if __name__ == 'main':
+    main()

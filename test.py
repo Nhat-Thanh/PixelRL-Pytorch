@@ -42,8 +42,7 @@ LS_IMAGE_PATHS = sorted_list(DATASET_DIR)
 # Test each image
 # =====================================================================================
 
-if __name__ == '__main__':
-
+def main():
     if SAVE_IMAGES:
         os.makedirs("results", exist_ok=True)
 
@@ -93,3 +92,7 @@ if __name__ == '__main__':
 
     print(f"Average reward: {TOTAL_REWARD * 255 / len(LS_IMAGE_PATHS)}")
     print(f"Average PSNR: {SUM_PSNR / len(LS_IMAGE_PATHS)}")
+
+
+if __name__ == '__main__':
+    main()
