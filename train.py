@@ -22,8 +22,8 @@ batch_size = FLAG.batch_size
 ckpt_dir = FLAG.ckpt_dir
 save_every = FLAG.save_every
 model_path = os.path.join(ckpt_dir, "model.pt")
-pretrain_path = f"initial_weight/denoise_{sigma}_gray_ConvGRU_RMC"
-model_path = os.path.join(ckpt_dir, "denoise_{sigma}_ConvGRU_RMC.pt")
+pretrain_path = f"initial_weight/denoise_{sigma}_gray_ConvGRU_RMC.pt"
+model_path = os.path.join(ckpt_dir, f"denoise_{sigma}_ConvGRU_RMC.pt")
 ckpt_path = os.path.join(ckpt_dir, "ckpt.pt")
 
 crop_size = 70
