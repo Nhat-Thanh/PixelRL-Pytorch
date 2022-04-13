@@ -78,5 +78,5 @@ def main():
     pixelRL.train(train_set, test_set, BATCH_SIZE, EPISODES, SAVE_EVERY)
 
 
-if __name__ == 'main':
+if __name__ == '__main__':
     main()
