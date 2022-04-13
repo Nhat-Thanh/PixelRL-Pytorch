@@ -11,16 +11,14 @@ class State:
     def reset(self, noise_img):
         self.image = noise_img
         b, _, h, w = self.image.shape
-        previous_state = torch.zeros(size=(b, 64, h, w), dtype=self.image.dtype)
-        self.tensor = torch.cat([self.image, previous_state], dim=1)
+        previous_state = np.zeros(size=(b, 64, h, w), dtype=self.image.dtype)
+        self.tensor = np.concatenate([self.image, previous_state], axis=1)
     
     def set(self, noise_img):
         self.image = noise_img
         self.tensor[:,0:1,:,:] = self.image
     
-    def step(self, actions, inner_state):
-        self.image = self.image.numpy()
-        act = actions.numpy()
+    def step(self, act, inner_state):
         box         = np.zeros(shape=self.image.shape, dtype=self.image.dtype)
         median      = np.zeros(shape=self.image.shape, dtype=self.image.dtype)
         bilateral   = np.zeros(shape=self.image.shape, dtype=self.image.dtype)
@@ -61,6 +59,5 @@ class State:
         self.image = np.where(act[:,np.newaxis,:,:]==7, bilateral_2, self.image)
         self.image = np.where(act[:,np.newaxis,:,:]==8, box,         self.image)
 
-        self.image = torch.as_tensor(self.image, dtype=torch.float32)
         self.tensor[:,0:1,:,:] = self.image
         self.tensor[:,-64:,:,:] = inner_state

@@ -3,6 +3,7 @@ from utils.common import exists
 from State import State
 import torch
 import copy
+import numpy as np
 
 torch.manual_seed(1)
 
@@ -110,18 +111,20 @@ class PixelWiseA3C_InnerState_ConvR:
             current_state.reset(noise)
 
             for t in range(0, self.t_max):
-                prev_image = current_state.image.clone()
-                noise = current_state.tensor.clone().to(self.device)
+                prev_image = current_state.image.copy()
+                noise = torch.as_tensor(current_state.tensor.copy()).to(self.device)
                 pi, _, inner_state = self.model.pi_and_v(noise)
+                
                 actions = torch.argmax(pi, dim=1)
-                current_state.step(actions.detach(), inner_state.detach())
-                reward = torch.square(labels - prev_image) * 255 - torch.square(labels - current_state.image) * 255
+                current_state.step(actions.detach().numpy(), inner_state.detach().numpy)
+                
+                reward = np.square(labels - prev_image) * 255 - np.square(labels - current_state.image) * 255
                 metric = self.metric(labels, current_state.image)
                 rewards.append(reward)
                 metrics.append(metric)
 
-        reward = torch.mean(torch.Tensor(rewards))
-        metric = torch.mean(torch.Tensor(metrics))
+        reward = np.mean(rewards)
+        metric = np.mean(metrics)
 
         return reward, metric
 
@@ -160,27 +163,27 @@ class PixelWiseA3C_InnerState_ConvR:
         self.shared_model.train(True)
 
         sum_reward = 0.0
-        reward = torch.zeros_like(labels, dtype=torch.float32)
+        reward = np.zeros_like(labels, dtype=torch.float32)
         t = 0
         while t < self.t_max:
-            self.past_rewards[t - 1] = reward.to(self.device)
-            prev_image = self.current_state.image.clone()
-            noise = self.current_state.tensor.clone().to(self.device)
+            self.past_rewards[t - 1] = torch.as_tensor(reward).to(self.device)
+            prev_image = self.current_state.image.copy()
+            noise = torch.as_tensor(self.current_state.tensor).to(self.device)
             pi, v, inner_state = self.model.pi_and_v(noise)
 
             pi_trans = pi.permute([0, 2, 3, 1])
             actions = Categorical(pi_trans).sample()
 
-            self.current_state.step(actions.detach(), inner_state.detach())
+            self.current_state.step(actions.detach().numpy(), inner_state.detach().numpy())
 
-            reward = torch.square(labels - prev_image) * 255 - \
-                torch.square(labels - self.current_state.image) * 255
+            reward = np.square(labels - prev_image) * 255 - \
+                     np.square(labels - self.current_state.image) * 255
             self.past_log_prob[t] = MyLogProb(pi, actions)
             self.past_entropy[t] = MyEntropy(pi)
             self.past_values[t] = v
-            sum_reward += torch.mean(reward) * (self.gamma ** t)
+            sum_reward += np.mean(reward) * np.power(self.gamma, t)
             t += 1
-        self.past_rewards[t - 1] = reward.to(self.device)
+        self.past_rewards[t - 1] = torch.as_tensor(reward).to(self.device)
 
         pi_loss = 0.0
         v_loss = 0.0

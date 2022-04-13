@@ -54,7 +54,7 @@ class dataset:
 
         if shuffle_arrays:
             np.random.shuffle(self.labels)
-        self.labels = torch.as_tensor(self.labels, dtype=torch.float32)
+        # self.labels = torch.as_tensor(self.labels, dtype=torch.float32)
     
     def get_batch(self, batch_size, shuffle_each_epoch=True):
         # Ignore remaining dataset because of  
@@ -64,11 +64,11 @@ class dataset:
             isEnd = True
             self.cur_idx = 0
             if shuffle_each_epoch:
-                indices = torch.randperm(self.labels.shape[0])
+                indices = np.random.permutation(self.labels.shape[0])
                 self.labels = self.labels[indices]
         
         labels = self.labels[self.cur_idx : self.cur_idx + batch_size]
-        noise = torch.normal(mean=0.0, std=15.0, size=labels.shape) / 255
+        noise = np.normal(0.0, 15.0, labels.shape) / 255
         data = labels + noise
         self.cur_idx += batch_size
         

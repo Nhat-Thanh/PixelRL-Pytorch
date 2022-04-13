@@ -103,10 +103,14 @@ def exists(path) -> bool:
     return os.path.exists(path)
 
 def PSNR(y_true, y_pred, max_val=1):
-    y_true = y_true.type(torch.float32)
-    y_pred = y_pred.type(torch.float32)
-    MSE = torch.mean(torch.square(y_true - y_pred))
-    return 10 * torch.log10(max_val * max_val / MSE)
+    # y_true = y_true.type(torch.float32)
+    # y_pred = y_pred.type(torch.float32)
+    # MSE = torch.mean(torch.square(y_true - y_pred))
+
+    y_true = np.float32(y_true)
+    y_pred = np.float32(y_pred)
+    MSE = np.mean(np.square(y_true - y_pred))
+    return 10 * np.log10(max_val * max_val / MSE)
 
 def random_crop(src, h_crop_size, w_crop_size):
     h = src.shape[0]
