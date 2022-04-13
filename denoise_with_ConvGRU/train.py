@@ -31,11 +31,11 @@ SIGMA = FLAG.sigma
 # training settings
 BATCH_SIZE = FLAG.batch_size
 CKPT_DIR = FLAG.ckpt_dir
-CKPT_PATH = os.path.join(CKPT_DIR, "ckpt.pt")
+CKPT_PATH = os.path.join(CKPT_DIR, SIGMA, f"ckpt-{SIGMA}.pt")
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 EPISODES = FLAG.episodes
-MODEL_PATH = os.path.join(CKPT_DIR, "model.pt")
-PRETRAINED_PATH = f"initial_weight/denoise_{SIGMA}_gray_ConvGRU_RMC.pt"
+MODEL_PATH = os.path.join(CKPT_DIR, SIGMA, f"model-{SIGMA}.pt")
+PRETRAINED_PATH = f"initial_weight/denoise_{SIGMA}_gray_ConvGRU.pt"
 SAVE_EVERY = FLAG.save_every
 
 # model settings
@@ -49,7 +49,7 @@ BETA = 1e-2
 
 # Dataset settings
 CROP_SIZE = 70
-DATASET_DIR = "dataset/"
+DATASET_DIR = "../dataset/denoise"
 
 
 # =====================================================================================

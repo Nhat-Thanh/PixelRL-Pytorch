@@ -34,7 +34,7 @@ N_ACTIONS = 9
 GAMMA = 0.95
 T_MAX = 5
 
-DATASET_DIR = "dataset/test"
+DATASET_DIR = "../dataset/denoise/test"
 LS_IMAGE_PATHS = sorted_list(DATASET_DIR)
 
 
@@ -69,13 +69,12 @@ def main():
         sum_reward = 0
         for t in range(0, T_MAX):
             prev_image = CURRENT_STATE.image.copy()
-            statevar = torch.as_tensor(CURRENT_STATE.tensor, dtype=torch.float32).to(DEVICE)
-            pi, _, inner_state = MODEL.pi_and_v(statevar)
+            statevar = torch.as_tensor(CURRENT_STATE.image, dtype=torch.float32).to(DEVICE)
+            pi, _ = MODEL.pi_and_v(statevar)
 
             actions = torch.argmax(pi, dim=1).cpu()
-            inner_state = inner_state.cpu()
 
-            CURRENT_STATE.step(actions, inner_state)
+            CURRENT_STATE.step(actions)
 
             reward = (np.square(label_image - prev_image) - np.square(label_image - CURRENT_STATE.image)) * 255
             sum_reward += np.mean(reward) * np.power(GAMMA, t)

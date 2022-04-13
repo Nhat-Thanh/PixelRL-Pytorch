@@ -8,7 +8,7 @@ class dataset:
     def __init__(self, dataset_dir, subset, noise_setting):
         self.cur_idx = 0
         self.labels = torch.Tensor([])
-        self.labels_file = os.path.join(dataset_dir, f"labels_{subset}.npy")
+        self.labels_file = f"labels_{subset}.npy"
         self.mean = noise_setting[0]
         self.sigma = noise_setting[1]
         self.subset_dir = os.path.join(dataset_dir, subset)
