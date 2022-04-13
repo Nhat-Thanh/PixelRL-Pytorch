@@ -189,7 +189,7 @@ class PixelWiseA3C_InnerState_ConvR:
         if self.v_loss_coef != 1.0:
             v_loss *= self.v_loss_coef
 
-        total_loss = torch.mean(pi_loss + v_loss)
+        total_loss = torch.nanmean(pi_loss + v_loss)
 
         self.optimizer.zero_grad()
         total_loss.backward()
