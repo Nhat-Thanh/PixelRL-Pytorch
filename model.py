@@ -160,10 +160,10 @@ class PixelWiseA3C_InnerState_ConvR:
         self.shared_model.train(True)
 
         sum_reward = 0.0
-        reward = torch.zeros_like(labels, dtype=torch.float32).to(self.device)
+        reward = torch.zeros_like(labels, dtype=torch.float32)
         t = 0
         while t < self.t_max:
-            self.past_rewards[t - 1] = reward
+            self.past_rewards[t - 1] = reward.to(self.device)
             prev_image = self.current_state.image.clone()
             noise = self.current_state.tensor.clone().to(self.device)
             pi, v, inner_state = self.model.pi_and_v(noise)
@@ -183,7 +183,7 @@ class PixelWiseA3C_InnerState_ConvR:
             self.past_values[t] = v
             sum_reward += torch.mean(reward) * (self.gamma ** t)
             t += 1
-        self.past_rewards[t - 1] = reward
+        self.past_rewards[t - 1] = reward.to(self.device)
 
         pi_loss = 0.0
         v_loss = 0.0
