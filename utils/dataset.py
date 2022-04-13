@@ -69,7 +69,8 @@ class dataset:
         
         labels = self.labels[self.cur_idx : self.cur_idx + batch_size]
         noise = np.random.normal(0.0, 15.0, labels.shape) / 255
-        data = labels + noise
+        data = np.clip(labels + noise, 0.0, 1.0)
+        data = data.astype(np.float32)
         self.cur_idx += batch_size
         
         return data, labels, isEnd
