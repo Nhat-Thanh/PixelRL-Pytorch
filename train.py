@@ -47,7 +47,7 @@ lr = 1e-3
 gamma = 0.95
 t_max = 5
 beta = 1e-2
-model = MyFCN(n_actions)
+model = MyFCN(n_actions).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr)
 pixelRL = PixelWiseA3C_InnerState_ConvR(model, t_max, gamma, beta)
 pixelRL.setup(optimizer, lr, batch_size, PSNR,  device, model_path, ckpt_path)
