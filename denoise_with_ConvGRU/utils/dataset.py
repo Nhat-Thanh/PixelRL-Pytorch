@@ -5,12 +5,12 @@ import torch
 from utils.common import *
 
 class dataset:
-    def __init__(self, dataset_dir, subset, noise_setting):
+    def __init__(self, dataset_dir, subset, noise_settings):
         self.cur_idx = 0
         self.labels = torch.Tensor([])
         self.labels_file = f"labels_{subset}.npy"
-        self.mean = noise_setting[0]
-        self.sigma = noise_setting[1]
+        self.mean = noise_settings[0]
+        self.sigma = noise_settings[1]
         self.subset_dir = os.path.join(dataset_dir, subset)
     
     def generate(self, h_crop_size, w_crop_size, transform=False):      

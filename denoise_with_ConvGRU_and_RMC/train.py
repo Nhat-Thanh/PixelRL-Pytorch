@@ -27,6 +27,7 @@ FLAG, unparsed = parser.parse_known_args()
 # Noise settings
 MEAN = 0.0
 SIGMA = FLAG.sigma
+NOISE_SETTINGS = (MEAN, SIGMA)
 
 # training settings
 BATCH_SIZE = FLAG.batch_size
@@ -57,11 +58,11 @@ DATASET_DIR = "../dataset/denoise/"
 # =====================================================================================
 
 def main():
-    train_set = dataset(DATASET_DIR, "train", (MEAN, SIGMA))
+    train_set = dataset(DATASET_DIR, "train", NOISE_SETTINGS)
     train_set.generate(CROP_SIZE, CROP_SIZE)
     train_set.load_data(shuffle_arrays=True)
 
-    test_set = dataset(DATASET_DIR, "test", (MEAN, SIGMA))
+    test_set = dataset(DATASET_DIR, "test", NOISE_SETTINGS)
     test_set.generate(CROP_SIZE, CROP_SIZE)
     test_set.load_data(shuffle_arrays=True)
 
