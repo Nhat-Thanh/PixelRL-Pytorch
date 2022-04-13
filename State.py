@@ -19,6 +19,8 @@ class State:
         self.tensor[:,0:1,:,:] = self.image
     
     def step(self, act, inner_state):
+        act = act.detach().numpy()
+        inner_state = inner_state.detach().numpy()
         box         = np.zeros(shape=self.image.shape, dtype=self.image.dtype)
         median      = np.zeros(shape=self.image.shape, dtype=self.image.dtype)
         bilateral   = np.zeros(shape=self.image.shape, dtype=self.image.dtype)

@@ -55,6 +55,7 @@ class dataset:
         if shuffle_arrays:
             np.random.shuffle(self.labels)
         # self.labels = torch.as_tensor(self.labels, dtype=torch.float32)
+        self.labels = np.float32(self.labels)
     
     def get_batch(self, batch_size, shuffle_each_epoch=True):
         # Ignore remaining dataset because of  

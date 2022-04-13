@@ -7,7 +7,6 @@ import numpy as np
 
 torch.manual_seed(1)
 
-
 def MyEntropy(pi):
     log_prob = torch.log(pi)
     entropy = torch.stack([- torch.sum(log_prob * pi, dim=1)]).permute(([1, 0, 2, 3]))
@@ -116,9 +115,9 @@ class PixelWiseA3C_InnerState_ConvR:
                 pi, _, inner_state = self.model.pi_and_v(noise)
                 
                 actions = torch.argmax(pi, dim=1)
-                current_state.step(actions.cpu().detach().numpy(), inner_state.cpu().detach().numpy())
+                current_state.step(actions.cpu(), inner_state.cpu())
                 
-                reward = np.square(labels - prev_image) * 255 - np.square(labels - current_state.image) * 255
+                reward = (np.square(labels - prev_image) - np.square(labels - current_state.image)) * 255
                 metric = self.metric(labels, current_state.image)
                 rewards.append(reward)
                 metrics.append(metric)
@@ -163,21 +162,23 @@ class PixelWiseA3C_InnerState_ConvR:
         self.shared_model.train(True)
 
         sum_reward = 0.0
-        reward = np.zeros_like(labels, dtype=np.float32)
+        reward = 0.0
         t = 0
         while t < self.t_max:
-            self.past_rewards[t - 1] = torch.as_tensor(reward, dtype=torch.float32).to(self.device)
+            self.past_rewards[t - 1] = torch.as_tensor(reward).to(self.device)
             prev_image = self.current_state.image.copy()
-            noise = torch.as_tensor(self.current_state.tensor, dtype=torch.float32).to(self.device)
+
+            noise = torch.as_tensor(self.current_state.tensor).to(self.device)
             pi, v, inner_state = self.model.pi_and_v(noise)
 
             pi_trans = pi.permute([0, 2, 3, 1])
-            actions = Categorical(pi_trans).sample()
+            actions = Categorical(pi_trans).sample().detach()
+            actions = actions.cpu()
+            inner_state = inner_state.cpu()
 
-            self.current_state.step(actions.cpu().detach().numpy(), inner_state.cpu().detach().numpy())
+            self.current_state.step(actions, inner_state)
 
-            reward = np.square(labels - prev_image) * 255 - \
-                     np.square(labels - self.current_state.image) * 255
+            reward = (np.square(labels - prev_image) - np.square(labels - self.current_state.image)) * 255
             self.past_log_prob[t] = MyLogProb(pi, actions)
             self.past_entropy[t] = MyEntropy(pi)
             self.past_values[t] = v
@@ -199,7 +200,7 @@ class PixelWiseA3C_InnerState_ConvR:
             Advantage = R - v
             pi_loss -= log_pi * Advantage
             pi_loss -= self.beta * entropy 
-            v_loss += (v - R) ** 2 / 2
+            v_loss += torch.square(Advantage) / 2
 
         if self.pi_loss_coef != 1.0:
             pi_loss *= self.pi_loss_coef
