@@ -1,3 +1,4 @@
+from MyFCN import MyFCN
 from model import PixelWiseA3C_InnerState_ConvR 
 from utils.dataset import dataset
 from utils.common import PSNR, exists
@@ -5,12 +6,13 @@ import argparse
 import torch
 import os
 
+torch.manual_seed(1)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--sigma",        type=int,   default=15,   help='-')
 parser.add_argument("--episodes",        type=int,   default=5,   help='-')
 parser.add_argument("--batch-size",      type=int,   default=64,       help='-')
-parser.add_argument("--save-every",      type=int,   default=1,        help='-')
+parser.add_argument("--save-every",      type=int,   default=5,        help='-')
 parser.add_argument("--ckpt-dir",        type=str,   default="checkpoint/",      help='-')
 
 FLAG, unparsed = parser.parse_known_args()
@@ -40,13 +42,15 @@ test_set.load_data(shuffle_arrays=True)
 # -----------------------------------------------------------
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 n_actions = 9
-pixelRL = PixelWiseA3C_InnerState_ConvR(n_actions, device)
 
 lr = 1e-3
 gamma = 0.95
 t_max = 5
 beta = 1e-2
-pixelRL.setup(opt_lr= lr, metric=PSNR, gamma=gamma, t_max=t_max, beta=beta, model_path=model_path, ckpt_path=ckpt_path)
+model = MyFCN(n_actions)
+optimizer = torch.optim.Adam(model.parameters(), lr)
+pixelRL = PixelWiseA3C_InnerState_ConvR(model, t_max, gamma, beta)
+pixelRL.setup(optimizer, lr, batch_size, PSNR,  device, model_path, ckpt_path)
 
 pixelRL.load_checkpoint(ckpt_path)
 if not exists(ckpt_path):

@@ -6,6 +6,7 @@ class State:
     def __init__(self):
         self.image = None
         self.tensor = None
+        self.move_range = 3
     
     def reset(self, noise_img):
         self.image = noise_img
@@ -15,14 +16,11 @@ class State:
     
     def set(self, noise_img):
         self.image = noise_img
-        self.tensor[:,:,:,0:1] = self.image
+        self.tensor[:,0:1,:,:] = self.image
     
     def step(self, actions, inner_state):
-        # image = self.image.to('cpu').numpy()
         self.image = self.image.numpy()
-        act = actions.cpu().numpy()
-        add_1       = self.image.copy()
-        subtract_1  = self.image.copy()
+        act = actions.numpy()
         box         = np.zeros(shape=self.image.shape, dtype=self.image.dtype)
         median      = np.zeros(shape=self.image.shape, dtype=self.image.dtype)
         bilateral   = np.zeros(shape=self.image.shape, dtype=self.image.dtype)
@@ -30,14 +28,13 @@ class State:
         gaussian    = np.zeros(shape=self.image.shape, dtype=self.image.dtype)
         gaussian_2  = np.zeros(shape=self.image.shape, dtype=self.image.dtype)
 
+        neutral = (self.move_range - 1) / 2
+        move = act.astype(np.float32)
+        move = (move - neutral) / 255
+        moved_image = self.image + move[:,np.newaxis,:,:]
+
         b = act.shape[0]
         for i in range(0, b):
-            if np.sum(act[i] == 0):
-                add_1[i] += (1.0 / 255)
-            
-            if np.sum(act[i] == 2):
-                subtract_1[i] -= (1.0 / 255)
-
             if np.sum(act[i] == 3):
                 gaussian[i, 0] = cv2.GaussianBlur(self.image[i, 0],  ksize=(5,5), sigmaX=0.5)
 
@@ -55,9 +52,8 @@ class State:
 
             if np.sum(act[i] == 8):
                 box[i, 0] = cv2.boxFilter(self.image[i, 0], ddepth=-1, ksize=(5,5))
-        
-        self.image = np.where(act[:,np.newaxis,:,:]==0, add_1,       self.image)
-        self.image = np.where(act[:,np.newaxis,:,:]==2, subtract_1,  self.image)
+
+        self.image = moved_image 
         self.image = np.where(act[:,np.newaxis,:,:]==3, gaussian,    self.image)
         self.image = np.where(act[:,np.newaxis,:,:]==4, bilateral,   self.image)
         self.image = np.where(act[:,np.newaxis,:,:]==5, median,      self.image)
