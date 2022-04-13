@@ -37,7 +37,7 @@ model = MyFCN(n_actions).to(device)
 if exists(model_path):
     model.load_state_dict(torch.load(model_path, map_location=torch.device(device)))
 
-model.eval()
+model.train(False)
 
 sum_reward = 0
 sum_psnr = 0
@@ -48,15 +48,15 @@ for i in range(0, len(ls_images)):
     label_image = np.expand_dims(label_image, 0)
 
     noise = np.random.normal(0.0, sigma, label_image.shape)
-    noise_image = np.clip(label_image + noise, 0.0, 1.0)
+    noise_image = np.clip(label_image + noise, 0.0, 1.0) / 255
     noise_image = np.float32(noise_image)
     current_state.reset(noise_image)
 
     rewards = []
     for t in range(0, t_max):
         prev_image = current_state.image.copy()
-        noise_image = torch.as_tensor(current_state.tensor, dtype=torch.float32).to(device)
-        pi, _, inner_state = model.pi_and_v(noise_image)
+        statevar = torch.as_tensor(current_state.tensor, dtype=torch.float32).to(device)
+        pi, _, inner_state = model.pi_and_v(statevar)
 
         actions = torch.argmax(pi, dim=1).cpu()
         inner_state = inner_state.cpu()
