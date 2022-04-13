@@ -52,7 +52,7 @@ for i in range(0, len(ls_images)):
     noise_image = np.float32(noise_image)
     current_state.reset(noise_image)
 
-    rewards = []
+    reward = 0
     for t in range(0, t_max):
         prev_image = current_state.image.copy()
         statevar = torch.as_tensor(current_state.tensor, dtype=torch.float32).to(device)
@@ -64,12 +64,10 @@ for i in range(0, len(ls_images)):
         current_state.step(actions, inner_state)
 
         reward = (np.square(label_image - prev_image) - np.square(label_image - current_state.image)) * 255
-
-        rewards.append(reward)
     
     current_image = np.clip(current_state.image, 0.0, 1.0)
     psnr = PSNR(label_image, current_image)
-    sum_reward += np.mean(rewards)
+    sum_reward += reward
     sum_psnr += psnr
 
     if save_images:
