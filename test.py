@@ -47,8 +47,8 @@ for i in range(0, len(ls_images)):
     label_image = norm01(label_image)[np.newaxis, ...]
     label_image = np.expand_dims(label_image, 0)
 
-    noise = np.random.normal(0.0, sigma, label_image.shape)
-    noise_image = np.clip(label_image + noise, 0.0, 1.0) / 255
+    noise = np.random.normal(0.0, sigma, label_image.shape) / 255
+    noise_image = np.clip(label_image + noise, 0.0, 1.0)
     noise_image = np.float32(noise_image)
     current_state.reset(noise_image)
 
