@@ -173,7 +173,6 @@ class PixelWiseA3C_InnerState_ConvR:
         R = torch.zeros_like(v).to(self.device)
         for k in reversed(range(0, self.t_max)):
             R *= self.gamma
-            R = self.model.conv_smooth(R)
             R += self.past_rewards[k]
             v = self.past_values[k]
             entropy = self.past_entropy[k]
