@@ -67,12 +67,13 @@ for i in range(0, len(ls_images)):
 
         rewards.append(reward)
     
-    psnr = PSNR(label_image, current_state.image)
+    current_image = np.clip(current_state.image, 0.0, 1.0)
+    psnr = PSNR(label_image, current_image)
     sum_reward += np.mean(rewards)
     sum_psnr += psnr
 
     if save_images:
-        saved_image = denorm01(current_state.image[0, 0])
+        saved_image = denorm01(current_image[0, 0])
         saved_image = np.uint8(saved_image)
         cv2.imwrite(f"results/image_{i}_{psnr:.2f}.png", saved_image)
 
