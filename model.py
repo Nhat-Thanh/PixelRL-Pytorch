@@ -116,7 +116,7 @@ class PixelWiseA3C_InnerState_ConvR:
                 pi, _, inner_state = self.model.pi_and_v(noise)
                 
                 actions = torch.argmax(pi, dim=1)
-                current_state.step(actions.cpu().numpy(), inner_state.cpu().numpy)
+                current_state.step(actions.cpu().detach().numpy(), inner_state.cpu().detach().numpy())
                 
                 reward = np.square(labels - prev_image) * 255 - np.square(labels - current_state.image) * 255
                 metric = self.metric(labels, current_state.image)
@@ -174,7 +174,7 @@ class PixelWiseA3C_InnerState_ConvR:
             pi_trans = pi.permute([0, 2, 3, 1])
             actions = Categorical(pi_trans).sample()
 
-            self.current_state.step(actions.cpu().numpy(), inner_state.cpu().numpy())
+            self.current_state.step(actions.cpu().detach().numpy(), inner_state.cpu().detach().numpy())
 
             reward = np.square(labels - prev_image) * 255 - \
                      np.square(labels - self.current_state.image) * 255
