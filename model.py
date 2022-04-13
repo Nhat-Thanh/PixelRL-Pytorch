@@ -166,9 +166,9 @@ class PixelWiseA3C_InnerState_ConvR:
         reward = np.zeros_like(labels, dtype=np.float32)
         t = 0
         while t < self.t_max:
-            self.past_rewards[t - 1] = torch.as_tensor(reward).to(self.device)
+            self.past_rewards[t - 1] = torch.as_tensor(reward, dtype=torch.float32).to(self.device)
             prev_image = self.current_state.image.copy()
-            noise = torch.as_tensor(self.current_state.tensor).to(self.device)
+            noise = torch.as_tensor(self.current_state.tensor, dtype=torch.float32).to(self.device)
             pi, v, inner_state = self.model.pi_and_v(noise)
 
             pi_trans = pi.permute([0, 2, 3, 1])
