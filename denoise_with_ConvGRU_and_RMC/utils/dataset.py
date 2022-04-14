@@ -18,7 +18,7 @@ class dataset:
             print(f"{self.labels_file} HAS ALREADY EXISTED\n")
             return
         ls_images = sorted_list(self.subset_dir)
-        num_crop = 20
+        num_crop = 25
 
         labels = np.zeros(shape=(len(ls_images) * num_crop, 1, h_crop_size, w_crop_size), 
                           dtype=np.float32)
