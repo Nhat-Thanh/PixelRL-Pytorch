@@ -162,7 +162,7 @@ class PixelWiseA3C_ConvGRU:
             actions_prob = torch.softmax(pi, dim=1)
             log_actions_prob = torch.log_softmax(pi, dim=1)
             prob_trans = actions_prob.permute([0, 2, 3, 1])
-            actions = Categorical(prob_trans).sample()
+            actions = Categorical(prob_trans).sample().detach()
 
             self.current_state.step(actions, inner_state)
             reward = (np.square(labels - prev_image) - np.square(labels - self.current_state.image)) * 255
